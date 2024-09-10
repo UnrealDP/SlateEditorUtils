@@ -1,0 +1,24 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "SlateEditorUtils",
+	"Description": "This module offers helpful utilities and reusable widgets to facilitate the creation of custom Slate-based UI elements for Unreal Engine's Editor.",
+	"Category": "Other",
+	"CreatedBy": "Dongpyo Lee",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": false,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "SlateEditorUtils",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		}
+	]
+}
