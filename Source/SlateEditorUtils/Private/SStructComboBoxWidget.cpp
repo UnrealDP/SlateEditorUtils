@@ -44,7 +44,7 @@ void SStructComboBoxWidget::Construct(const FArguments& InArgs)
         // 선택된 이벤트가 바인딩되어 있는 경우에만 호출
         if (OnSelectionChangedEvent.IsBound())
         {
-            OnSelectionChangedEvent.Execute(SelectedStruct, ESelectInfo::Type::Direct);
+            OnSelectionChangedEvent.Execute(SelectedStruct);
         }
     }
 }
@@ -79,7 +79,7 @@ void SStructComboBoxWidget::OnComboBoxSelectionChanged(UScriptStruct* NewSelecti
         // 선택된 이벤트가 바인딩되어 있는 경우에만 호출
         if (OnSelectionChangedEvent.IsBound())
         {
-            OnSelectionChangedEvent.Execute(NewSelection, SelectInfo);
+            OnSelectionChangedEvent.Execute(NewSelection);
         }
     }
 }
