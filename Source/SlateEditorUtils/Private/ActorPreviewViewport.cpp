@@ -162,6 +162,7 @@ void SActorPreviewViewport::OnFloatingButtonClicked()
 TSharedRef<FEditorViewportClient> SActorPreviewViewport::MakeEditorViewportClient()
 {
 	ViewportClient = MakeShareable(new FActorPreviewViewportClient(*PreviewScene, SharedThis(this)));
+	UAssetViewerSettings::Get()->OnAssetViewerSettingsChanged().AddRaw(this, &SActorPreviewViewport::OnAssetViewerSettingsChanged);
 
 	/*
 	* Realtime Mode : 뷰포트가 실시간 렌더링을 사용하는지 여부를 설정
@@ -172,9 +173,7 @@ TSharedRef<FEditorViewportClient> SActorPreviewViewport::MakeEditorViewportClien
 	ViewportClient->SetRealtime(true);
 
 	// 카메라 초기 위치와 회전을 설정
-	ViewportClient->SetViewLocation(FVector::ZeroVector);
-	ViewportClient->SetViewRotation(FRotator(-15.0f, -90.0f, 0.0f));
-	ViewportClient->SetViewLocationForOrbiting(FVector::ZeroVector);
+	InitCamera();
 	ViewportClient->bSetListenerPosition = false;
 	ViewportClient->EngineShowFlags.EnableAdvancedFeatures();
 	ViewportClient->EngineShowFlags.SetLighting(true);
@@ -184,6 +183,32 @@ TSharedRef<FEditorViewportClient> SActorPreviewViewport::MakeEditorViewportClien
 	//ViewportClient->VisibilityDelegate.BindSP(this, &SMaterialEditor3DPreviewViewport::IsVisible);
 
 	return ViewportClient.ToSharedRef();
+}
+
+void SActorPreviewViewport::InitCamera()
+{
+	FVector CameraLocation(-400.0f, 120.0f, 150.0f);
+	FVector TargetLocation(0.0f, 120.0f, 100.0f);
+	FRotator CameraRotation = (TargetLocation - CameraLocation).Rotation();
+
+	ViewportClient->SetViewLocation(CameraLocation);
+	ViewportClient->SetViewRotation(CameraRotation);
+}
+
+/** Call back for when the user changes preview scene settings in the UI */
+void SActorPreviewViewport::OnAssetViewerSettingsChanged(const FName& InPropertyName)
+{
+	if (InPropertyName == GET_MEMBER_NAME_CHECKED(FPreviewSceneProfile, bRotateLightingRig) || InPropertyName == NAME_None)
+	{
+		UAssetViewerSettings* Settings = UAssetViewerSettings::Get();
+		const int32 ProfileIndex = PreviewScene->GetCurrentProfileIndex();
+		if (Settings->Profiles.IsValidIndex(ProfileIndex) &&
+			Settings->Profiles[ProfileIndex].bRotateLightingRig
+			&& !ViewportClient->IsRealtime())
+		{
+			ViewportClient->SetRealtime(true);
+		}
+	}
 }
 
 /// <summary>

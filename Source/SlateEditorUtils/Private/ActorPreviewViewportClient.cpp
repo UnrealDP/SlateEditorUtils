@@ -40,7 +40,7 @@ FActorPreviewViewportClient::FActorPreviewViewportClient(FAdvancedPreviewScene& 
 	 * 즉, 카메라가 한 점을 바라보며 그 점을 중심으로 원형 궤도를 그리면서 회전하는 방식
 	 * 주로 3D 뷰포트에서 오브젝트를 다양한 각도에서 관찰하기 위해 사용하는 기능
 	 */
-	bUsingOrbitCamera = true;
+	 bUsingOrbitCamera = false;
 
 	AdvancedPreviewScene = &InPreviewScene;
 }
@@ -50,6 +50,11 @@ void FActorPreviewViewportClient::Tick(float DeltaSeconds)
 	FEditorViewportClient::Tick(DeltaSeconds);
 	// 미리보기 씬의 월드를 틱
 	PreviewScene->GetWorld()->Tick(LEVELTICK_All, DeltaSeconds);
+
+	FVector v1 = GetViewLocation();
+	FRotator r1 = GetViewRotation();
+	UE_LOG(LogTemp, Log, TEXT("Camera Location: X=%f, Y=%f, Z=%f"), v1.X, v1.Y, v1.Z);
+	UE_LOG(LogTemp, Log, TEXT("Camera Rotation: Pitch=%f, Yaw=%f, Roll=%f"), r1.Pitch, r1.Yaw, r1.Roll);
 }
 
 /// <summary>

@@ -53,6 +53,11 @@ public:
 	 */
 	virtual void AddReferencedObjects(FReferenceCollector& Collector) override;
 
+	void InitCamera();
+
+	/** Call back for when the user changes preview scene settings in the UI */
+	void OnAssetViewerSettingsChanged(const FName& InPropertyName);
+
 	/** Updates the skeletal mesh animation */
 	void UpdateAnimation(float DeltaTime);
 
