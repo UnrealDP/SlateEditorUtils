@@ -5,6 +5,11 @@
 #include "SlateOptMacros.h"
 
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
+
+/// <summary>
+/// 위젯을 초기화하는 함수. 콤보 박스를 구성하고, 기본 선택 항목을 설정.
+/// </summary>
+/// <param name="InArgs">구성에 필요한 인자들.</param>
 void SStructComboBoxWidget::Construct(const FArguments& InArgs)
 {
     // 이거 절대 다른 라인으로 내리지 말것 !!!!
@@ -50,7 +55,10 @@ void SStructComboBoxWidget::Construct(const FArguments& InArgs)
 }
 END_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
-// 선택된 struct를 강제로 설정하는 함수
+/// <summary>
+/// 선택된 struct를 강제로 설정하는 함수.
+/// </summary>
+/// <param name="NewStruct">새롭게 설정할 UScriptStruct.</param>
 void SStructComboBoxWidget::SetSelectedStruct(UScriptStruct* NewStruct)
 {
     for (UScriptStruct* Struct : *StructOptions)
@@ -63,13 +71,21 @@ void SStructComboBoxWidget::SetSelectedStruct(UScriptStruct* NewStruct)
     }
 }
 
-// 콤보 박스 아이템 생성
+/// <summary>
+/// 콤보 박스 항목을 생성하는 함수.
+/// </summary>
+/// <param name="InStruct">생성할 struct.</param>
+/// <returns>생성된 위젯.</returns>
 TSharedRef<SWidget> SStructComboBoxWidget::GenerateComboBoxItem(UScriptStruct* InStruct)
 {
     return SNew(STextBlock).Text(FText::FromString(InStruct->GetName()));
 }
 
-// 콤보 박스 선택 변경 이벤트 처리
+/// <summary>
+/// 콤보 박스에서 선택이 변경되었을 때 호출되는 함수.
+/// </summary>
+/// <param name="NewSelection">새롭게 선택된 struct.</param>
+/// <param name="SelectInfo">선택 정보.</param>
 void SStructComboBoxWidget::OnComboBoxSelectionChanged(UScriptStruct* NewSelection, ESelectInfo::Type SelectInfo)
 {
     if (NewSelection)
@@ -84,13 +100,20 @@ void SStructComboBoxWidget::OnComboBoxSelectionChanged(UScriptStruct* NewSelecti
     }
 }
 
-// 선택된 struct의 이름을 반환
+/// <summary>
+/// 현재 선택된 struct의 이름을 반환하는 함수.
+/// </summary>
+/// <returns>선택된 struct의 이름을 FText 형식으로 반환.</returns>
 FText SStructComboBoxWidget::GetSelectedStructText() const
 {
     return SelectedStruct ? FText::FromString(SelectedStruct->GetName()) : FText::GetEmpty();
 }
 
-// 특정 베이스 struct를 상속받은 struct를 찾아 목록을 구성
+/// <summary>
+/// 특정 베이스 struct를 상속받은 모든 struct를 찾아 목록을 구성하는 함수.
+/// </summary>
+/// <param name="BaseStruct">기준이 되는 struct.</param>
+/// <param name="bIncludeBaseStruct">베이스 struct를 목록에 포함할지 여부.</param>
 void SStructComboBoxWidget::PopulateStructOptions(UScriptStruct* BaseStruct, bool bIncludeBaseStruct)
 {
     for (TObjectIterator<UScriptStruct> It; It; ++It)

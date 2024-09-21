@@ -5,7 +5,7 @@
 
 #include "CoreMinimal.h"
 #include "EditorViewportClient.h"
-#include "ActorPreviewScene.h"
+#include "AdvancedPreviewScene.h"
 
 /**
  * 뷰포트 클라이언트: 카메라 제어 및 입력 처리

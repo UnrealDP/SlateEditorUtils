@@ -38,7 +38,10 @@ void SStringComboBoxWidget::Construct(const FArguments& InArgs)
 END_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
 
-// 선택 값을 강제로 설정하는 함수
+/// <summary>
+/// 선택 값을 강제로 설정하는 함수.
+/// </summary>
+/// <param name="NewValue">새롭게 설정할 값.</param>
 void SStringComboBoxWidget::SetSelectedValue(const FString& NewValue)
 {
     for (const TSharedPtr<FString>& Option : *OptionsSource)
@@ -51,13 +54,21 @@ void SStringComboBoxWidget::SetSelectedValue(const FString& NewValue)
     }
 }
 
-// 콤보 박스 아이템 생성
+/// <summary>
+/// 콤보 박스 항목을 생성하는 함수.
+/// </summary>
+/// <param name="InOption">생성할 항목의 문자열 포인터.</param>
+/// <returns>생성된 위젯.</returns>
 TSharedRef<SWidget> SStringComboBoxWidget::GenerateComboBoxItem(TSharedPtr<FString> InOption)
 {
     return SNew(STextBlock).Text(FText::FromString(*InOption));
 }
 
-// 콤보 박스 선택 변경 이벤트 처리
+/// <summary>
+/// 콤보 박스 선택 변경 이벤트 처리.
+/// </summary>
+/// <param name="NewSelection">새롭게 선택된 항목의 문자열 포인터.</param>
+/// <param name="SelectInfo">선택 정보 타입.</param>
 void SStringComboBoxWidget::OnComboBoxSelectionChanged(TSharedPtr<FString> NewSelection, ESelectInfo::Type SelectInfo)
 {
     if (NewSelection.IsValid())
@@ -72,7 +83,10 @@ void SStringComboBoxWidget::OnComboBoxSelectionChanged(TSharedPtr<FString> NewSe
     }
 }
 
-// 선택된 값 반환 (콤보 박스에서 사용)
+/// <summary>
+/// 선택된 값 반환 (콤보 박스에서 사용).
+/// </summary>
+/// <returns>선택된 문자열 값. 값이 없을 경우 빈 텍스트를 반환.</returns>
 FText SStringComboBoxWidget::GetSelectedText() const
 {
     return SelectedOption.IsValid() ? FText::FromString(*SelectedOption) : FText::GetEmpty();

@@ -1,17 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "ActorPreviewViewport.h"
-//#include "AdvancedPreviewScene.h"
 #include "ActorPreviewViewportClient.h"
-//#include "SEditorViewport.h"
-//#include "Engine/StaticMesh.h"
-//#include "Components/SkeletalMeshComponent.h"
-//#include "Components/StaticMeshComponent.h"
-//#include "Animation/AnimSingleNodeInstance.h"
-//#include "Widgets/SCompoundWidget.h"
-//#include "EditorViewportClient.h"
-//#include "PreviewScene.h"
-//#include "Animation/AnimInstance.h"
 
 /// <summary>
 /// 뷰포트 위젯을 생성하는 함수.
@@ -38,6 +28,7 @@ SActorPreviewViewport::~SActorPreviewViewport()
 /// <param name="Collector">참조할 객체 수집기.</param>
 void SActorPreviewViewport::AddReferencedObjects(FReferenceCollector& Collector)
 {
+	// 가비지 컬렉터가 미리보기 메쉬 컴포넌트를 수집하도록 추가
 	Collector.AddReferencedObject(PreviewMeshComponent);
 }
 
@@ -75,7 +66,8 @@ bool SActorPreviewViewport::SetPreviewAsset(UObject* InAsset)
 		PreviewMeshComponent = NewSkeletalMeshComponent;
 		SkeletalMeshComponent = NewSkeletalMeshComponent;
 
-		NewSkeletalMeshComponent->PlayAnimation(nullptr, true); // 기본 애니메이션 재생
+		// 기본 애니메이션 재생
+		NewSkeletalMeshComponent->PlayAnimation(nullptr, true);
 		AnimInstance = NewSkeletalMeshComponent->GetAnimInstance();
 		return true;
 	}
@@ -88,6 +80,7 @@ bool SActorPreviewViewport::SetPreviewAsset(UObject* InAsset)
 /// </summary>
 void SActorPreviewViewport::ClearPreviewAsset()
 {
+	// 설정된 프리뷰 메쉬가 있으면 제거하고, 컴포넌트와 참조를 초기화
 	if (PreviewMeshComponent.IsValid())
 	{
 		PreviewScene->RemoveComponent(PreviewMeshComponent.Get());
@@ -109,17 +102,28 @@ void SActorPreviewViewport::UpdateAnimation(float DeltaTime)
 	}
 }
 
+/// <summary>
+/// 뷰포트 UI 위젯을 반환.
+/// </summary>
+/// <returns>현재 뷰포트 위젯의 참조.</returns>
 TSharedRef<class SEditorViewport> SActorPreviewViewport::GetViewportWidget()
 {
 	return SharedThis(this);
 }
 
+/// <summary>
+/// 확장자를 반환. 현재 사용되지 않음.
+/// </summary>
+/// <returns>FExtender 객체의 공유 포인터.</returns>
 TSharedPtr<FExtender> SActorPreviewViewport::GetExtenders() const
 {
 	TSharedPtr<FExtender> Result(MakeShareable(new FExtender));
 	return Result;
 }
 
+/// <summary>
+/// 플로팅 버튼 클릭 시 호출되는 함수.
+/// </summary>
 void SActorPreviewViewport::OnFloatingButtonClicked()
 {
 }
@@ -131,8 +135,16 @@ void SActorPreviewViewport::OnFloatingButtonClicked()
 TSharedRef<FEditorViewportClient> SActorPreviewViewport::MakeEditorViewportClient()
 {
 	ViewportClient = MakeShareable(new FActorPreviewViewportClient(*PreviewScene, SharedThis(this)));
+
+	/*
+	* Realtime Mode : 뷰포트가 실시간 렌더링을 사용하는지 여부를 설정
+	* SetRealtime 에서 bShouldInvalidateViewportWidget가 true로 설정되어 뷰포트가 다시 그려지도록 요청
+	* 즉, 뷰포트가 즉시 화면에 반영되지 않는다면, 이 플래그가 변경된 후 다음 프레임에서 화면을 갱신
+	* bIsRealtime이 false로 설정되면, 뷰포트는 실시간으로 화면을 갱신하지 않고, 특정 이벤트나 요청에 의해서만 갱신 (Focus, 카메라 움직임 등)
+	*/
 	ViewportClient->SetRealtime(true);
 
+	// 카메라 초기 위치와 회전을 설정
 	ViewportClient->SetViewLocation(FVector::ZeroVector);
 	ViewportClient->SetViewRotation(FRotator(-15.0f, -90.0f, 0.0f));
 	ViewportClient->SetViewLocationForOrbiting(FVector::ZeroVector);
@@ -142,20 +154,14 @@ TSharedRef<FEditorViewportClient> SActorPreviewViewport::MakeEditorViewportClien
 	ViewportClient->EngineShowFlags.SetIndirectLightingCache(true);
 	ViewportClient->EngineShowFlags.SetPostProcessing(true);
 	ViewportClient->Invalidate();
-	/*ViewportClient->SetViewLocation(FVector::ZeroVector);
-	ViewportClient->SetViewRotation(FRotator(-15.0f, -90.0f, 0.0f));
-	ViewportClient->SetViewLocationForOrbiting(FVector::ZeroVector);
-	ViewportClient->bSetListenerPosition = false;
-	ViewportClient->EngineShowFlags.EnableAdvancedFeatures();
-	ViewportClient->EngineShowFlags.SetLighting(true);
-	ViewportClient->EngineShowFlags.SetIndirectLightingCache(true);
-	ViewportClient->EngineShowFlags.SetPostProcessing(true);
-	ViewportClient->Invalidate();
-	ViewportClient->VisibilityDelegate.BindSP(this, &SMaterialEditor3DPreviewViewport::IsVisible);*/
+	//ViewportClient->VisibilityDelegate.BindSP(this, &SMaterialEditor3DPreviewViewport::IsVisible);
 
 	return ViewportClient.ToSharedRef();
 }
 
+/// <summary>
+/// 뷰포트 갱신 함수. 프리뷰 컴포넌트의 상태를 갱신.
+/// </summary>
 void SActorPreviewViewport::RefreshViewport()
 {
 	// reregister the preview components, so if the preview material changed it will be propagated to the render thread
@@ -176,6 +182,10 @@ void SActorPreviewViewport::RefreshViewport()
 	}
 }
 
+/// <summary>
+/// 뷰포트가 특정 탭에 추가할 때 Parent 등록하는 함수
+/// </summary>
+/// <param name="OwnerTab">추가될 탭의 참조.</param>
 void SActorPreviewViewport::OnAddedToTab(const TSharedRef<SDockTab>& OwnerTab)
 {
 	ParentTab = OwnerTab;
