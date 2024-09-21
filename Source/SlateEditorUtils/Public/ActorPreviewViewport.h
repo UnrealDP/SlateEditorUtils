@@ -24,6 +24,11 @@ public:
 		return TEXT("SActorPreviewViewport");
 	}
 
+	// Getter & Setter
+	/** Returns the preview scene */
+	TSharedRef<class FAdvancedPreviewScene> GetPreviewScene() { return PreviewScene.ToSharedRef(); }
+	// End of Getter & Setter
+
 	/**
 	 * 프리뷰 어셋을 설정. 스태틱 메쉬 또는 스켈레탈 메쉬만 지원.
 	 * @param InAsset 설정할 스태틱 메쉬 또는 스켈레탈 메쉬.
@@ -35,17 +40,21 @@ public:
 	void ClearPreviewAsset();
 
 	/**
+	 * 프리뷰 월드(레벨)을 설정
+	 * @param InWorld 설정할 World.
+	 * @return 성공적으로 설정되었으면 true, 그렇지 않으면 false를 반환.
+	 * !!!!!! 프리뷰는 월드 바꿔도 적용되지 않음 !!!!!!
+	 */
+	//bool SetPreviewWorld(class UWorld* InWorld);
+
+	/**
 	 * FGCObject 인터페이스 구현. 가비지 컬렉터에서 관리할 객체를 참조 목록에 추가.
 	 * @param Collector 참조할 객체 수집기.
 	 */
 	virtual void AddReferencedObjects(FReferenceCollector& Collector) override;
 
-	/** Returns the preview scene */
-	TSharedRef<class FAdvancedPreviewScene> GetPreviewScene() { return PreviewScene.ToSharedRef(); }
-
 	/** Updates the skeletal mesh animation */
 	void UpdateAnimation(float DeltaTime);
-
 
 	void RefreshViewport();
 

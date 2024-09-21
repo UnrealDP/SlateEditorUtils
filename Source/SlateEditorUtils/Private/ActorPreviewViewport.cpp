@@ -2,6 +2,8 @@
 
 #include "ActorPreviewViewport.h"
 #include "ActorPreviewViewportClient.h"
+#include "AssetViewerSettings.h"
+#include "Slate/SceneViewport.h"
 
 /// <summary>
 /// 뷰포트 위젯을 생성하는 함수.
@@ -74,6 +76,31 @@ bool SActorPreviewViewport::SetPreviewAsset(UObject* InAsset)
 
 	return false;
 }
+
+/// <summary>
+/// 프리뷰 월드(레벨)을 설정
+/// </summary>
+/// <param name="InAsset">설정할 World.</param>
+/// <returns>성공적으로 설정되었으면 true, 그렇지 않으면 false를 반환.</returns>
+/// !!!!!! 프리뷰는 월드 바꿔도 적용되지 않음 !!!!!!
+//bool SActorPreviewViewport::SetPreviewWorld(class UWorld* InWorld)
+//{
+//	UWorld* CrrWorld = GetWorld();
+//	if (!CrrWorld)
+//	{
+//		return false;
+//	}
+//
+//	ULevel* CrrLevel = InWorld->GetCurrentLevel();
+//	if (!CrrLevel)
+//	{
+//		return false;
+//	}
+//
+//	CrrWorld->SetCurrentLevel(CrrLevel);
+//	RefreshViewport();
+//	return true;
+//}
 
 /// <summary>
 /// 현재 설정된 프리뷰 어셋을 제거.
@@ -169,12 +196,17 @@ void SActorPreviewViewport::RefreshViewport()
 	{
 		PreviewMeshComponent->MarkRenderStateDirty();
 	}
-	//SceneViewport->InvalidateDisplay();
+	SceneViewport->InvalidateDisplay();
 
 	if (ViewportClient.IsValid() && PreviewScene.IsValid())
 	{
+		UAssetViewerSettings* Settings = UAssetViewerSettings::Get();
 		const int32 ProfileIndex = PreviewScene->GetCurrentProfileIndex();
-		//PreviewScene->UpdateScene(FPreviewSceneProfile());
+		if (Settings->Profiles.IsValidIndex(ProfileIndex))
+		{
+			PreviewScene->UpdateScene(Settings->Profiles[ProfileIndex]);
+		}
+		
 		if (!ViewportClient->IsRealtime())
 		{
 			ViewportClient->SetRealtime(true);
