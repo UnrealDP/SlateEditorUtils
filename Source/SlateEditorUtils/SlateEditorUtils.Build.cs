@@ -45,6 +45,8 @@ public class SlateEditorUtils : ModuleRules
 				"LevelEditor",
                 "InteractiveToolsFramework",
                 "EditorInteractiveToolsFramework",
+                "AdvancedPreviewScene",
+                "CoreUtils",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
