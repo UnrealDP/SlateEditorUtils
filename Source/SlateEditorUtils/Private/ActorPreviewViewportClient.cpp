@@ -50,11 +50,6 @@ void FActorPreviewViewportClient::Tick(float DeltaSeconds)
 	FEditorViewportClient::Tick(DeltaSeconds);
 	// 미리보기 씬의 월드를 틱
 	PreviewScene->GetWorld()->Tick(LEVELTICK_All, DeltaSeconds);
-
-	FVector v1 = GetViewLocation();
-	FRotator r1 = GetViewRotation();
-	UE_LOG(LogTemp, Log, TEXT("Camera Location: X=%f, Y=%f, Z=%f"), v1.X, v1.Y, v1.Z);
-	UE_LOG(LogTemp, Log, TEXT("Camera Rotation: Pitch=%f, Yaw=%f, Roll=%f"), r1.Pitch, r1.Yaw, r1.Roll);
 }
 
 /// <summary>
