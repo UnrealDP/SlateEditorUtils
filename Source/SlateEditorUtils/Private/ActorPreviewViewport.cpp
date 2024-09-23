@@ -24,6 +24,27 @@ SActorPreviewViewport::~SActorPreviewViewport()
 	ClearPreviewAsset();
 }
 
+void SActorPreviewViewport::SpawnActorInPreviewWorld(UClass* ActorClass)
+{
+	if (ActorClass && GetWorld())
+	{
+		UWorld* PreviewWorld = GetWorld();
+
+		if (PreviewWorld)
+		{
+			FTransform ActorTransform;
+			ActorTransform.SetLocation(FVector(0.0f, 0.0f, 100.0f));  // 원하는 위치 설정
+
+			// 프리뷰 월드에 액터 생성
+			Actor = PreviewWorld->SpawnActor<AActor>(ActorClass, ActorTransform);
+			if (Actor)
+			{
+				UE_LOG(LogTemp, Log, TEXT("Actor %s created in the preview world!"), *Actor->GetName());
+			}
+		}
+	}
+}
+
 /// <summary>
 /// 가비지 컬렉터에서 참조할 객체들을 수집.
 /// </summary>
@@ -54,17 +75,17 @@ bool SActorPreviewViewport::SetPreviewAsset(UObject* InAsset)
 
 	if (UStaticMesh* StaticMesh = Cast<UStaticMesh>(InAsset))
 	{
-		UStaticMeshComponent* NewStaticMeshComponent = NewObject<UStaticMeshComponent>(GetTransientPackage(), NAME_None, RF_Transient);
-		NewStaticMeshComponent->SetStaticMesh(StaticMesh);
+		UStaticMeshComponent* NewStaticMeshComponent = ReplaceComponentToActor<UStaticMeshComponent>();
 		PreviewScene->AddComponent(NewStaticMeshComponent, FTransform::Identity);
+		NewStaticMeshComponent->SetStaticMesh(StaticMesh);
 		PreviewMeshComponent = NewStaticMeshComponent;
 		return true;
 	}
 	else if (USkeletalMesh* SkeletalMesh = Cast<USkeletalMesh>(InAsset))
 	{
-		USkeletalMeshComponent* NewSkeletalMeshComponent = NewObject<USkeletalMeshComponent>(GetTransientPackage(), NAME_None, RF_Transient);
-		NewSkeletalMeshComponent->SetSkeletalMesh(SkeletalMesh);
+		USkeletalMeshComponent* NewSkeletalMeshComponent = ReplaceComponentToActor<USkeletalMeshComponent>();
 		PreviewScene->AddComponent(NewSkeletalMeshComponent, FTransform::Identity);
+		NewSkeletalMeshComponent->SetSkeletalMesh(SkeletalMesh);
 		PreviewMeshComponent = NewSkeletalMeshComponent;
 		SkeletalMeshComponent = NewSkeletalMeshComponent;
 
@@ -198,6 +219,11 @@ void SActorPreviewViewport::InitCamera()
 /** Call back for when the user changes preview scene settings in the UI */
 void SActorPreviewViewport::OnAssetViewerSettingsChanged(const FName& InPropertyName)
 {
+	if (!PreviewScene)
+	{
+		return;
+	}
+
 	if (InPropertyName == GET_MEMBER_NAME_CHECKED(FPreviewSceneProfile, bRotateLightingRig) || InPropertyName == NAME_None)
 	{
 		UAssetViewerSettings* Settings = UAssetViewerSettings::Get();

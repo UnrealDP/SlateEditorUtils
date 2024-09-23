@@ -27,7 +27,40 @@ public:
 	// Getter & Setter
 	/** Returns the preview scene */
 	TSharedRef<class FAdvancedPreviewScene> GetPreviewScene() { return PreviewScene.ToSharedRef(); }
+	UWorld* GetPreviewWorld() const { return GetWorld(); }
+	AActor* GetActor() const { return Actor; }
 	// End of Getter & Setter
+
+	void SpawnActorInPreviewWorld(UClass* ActorClass);
+
+	template <typename T>
+	T* ReplaceComponentToActor()
+	{
+		T* NewComponent = nullptr;
+
+		if (Actor)
+		{
+			TArray<T*> OldComponents;
+			Actor->GetComponents(OldComponents);
+			for (T* Comp : OldComponents)
+			{
+				if (Comp)
+				{
+					Comp->DestroyComponent();
+				}
+			}
+
+			NewComponent = NewObject<T>(Actor, NAME_None, RF_Transient);
+			Actor->AttachToComponent(NewComponent, FAttachmentTransformRules::KeepRelativeTransform);
+		}
+		else
+		{
+			NewComponent = NewObject<T>(GetTransientPackage(), NAME_None, RF_Transient);
+		}
+		
+		return NewComponent;
+	}
+
 
 	/**
 	 * 프리뷰 어셋을 설정. 스태틱 메쉬 또는 스켈레탈 메쉬만 지원.
@@ -99,4 +132,6 @@ private:
 
 	/** Animation instance */
 	TWeakObjectPtr<class UAnimInstance> AnimInstance;
+
+	TObjectPtr<AActor> Actor;
 };
