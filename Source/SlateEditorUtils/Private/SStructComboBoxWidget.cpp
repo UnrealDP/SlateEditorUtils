@@ -29,6 +29,11 @@ void SStructComboBoxWidget::Construct(const FArguments& InArgs)
     if (StructOptions->Num() > 0)
     {
         SelectedStruct = (*StructOptions)[0];
+
+        if (OnSelectionChangedEvent.IsBound())
+        {
+            OnSelectionChangedEvent.Execute(SelectedStruct);
+        }
     }
 
     ChildSlot

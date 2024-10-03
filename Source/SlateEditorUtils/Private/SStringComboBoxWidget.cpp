@@ -20,6 +20,11 @@ void SStringComboBoxWidget::Construct(const FArguments& InArgs)
     if (OptionsSource->Num() > 0)
     {
         SelectedOption = (*OptionsSource)[0];
+
+        if (OnSelectionChangedEvent.IsBound())
+        {
+            OnSelectionChangedEvent.Execute(SelectedOption, ESelectInfo::Direct);
+        }
     }
 
     ChildSlot

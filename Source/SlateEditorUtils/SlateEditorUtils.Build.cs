@@ -40,13 +40,11 @@ public class SlateEditorUtils : ModuleRules
 				"SlateCore",
 				"InputCore",
 				"EditorFramework",
-				"EditorStyle",
 				"UnrealEd",
 				"LevelEditor",
                 "InteractiveToolsFramework",
                 "EditorInteractiveToolsFramework",
                 "AdvancedPreviewScene",
-                "CoreUtils",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
