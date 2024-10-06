@@ -22,3 +22,10 @@ public:
     */
     static TSharedRef<SWidget> CreateButtonWithText(const FText& ButtonText, FOnClicked OnClickedCallback);
 };
+
+#define SLATE_SPACE_SLOT(X, Y) \
+    + SVerticalBox::Slot() \
+    .AutoHeight() \
+    [ \
+        SNew(SSpacer).Size(FVector2D(X, Y)) \
+    ]
