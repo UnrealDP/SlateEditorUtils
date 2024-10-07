@@ -112,8 +112,6 @@ protected:
 	virtual TSharedRef<class FEditorViewportClient> MakeEditorViewportClient() override;
 
 private:
-	// 프리뷰 씬을 생성하고 초기화하는 함수.
-	void CreatePreviewScene();
 
 	/** The parent tab where this viewport resides */
 	TWeakPtr<SDockTab> ParentTab;

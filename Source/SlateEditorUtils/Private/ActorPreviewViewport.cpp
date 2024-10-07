@@ -11,7 +11,7 @@
 /// <param name="InArgs">SLATE의 아규먼트.</param>
 void SActorPreviewViewport::Construct(const FArguments& InArgs)
 {
-	CreatePreviewScene();
+	PreviewScene = MakeShareable(new FAdvancedPreviewScene(FPreviewScene::ConstructionValues()));
 
 	SEditorViewport::Construct(SEditorViewport::FArguments());
 }
@@ -53,14 +53,6 @@ void SActorPreviewViewport::AddReferencedObjects(FReferenceCollector& Collector)
 {
 	// 가비지 컬렉터가 미리보기 메쉬 컴포넌트를 수집하도록 추가
 	Collector.AddReferencedObject(PreviewMeshComponent);
-}
-
-/// <summary>
-/// 프리뷰 씬을 생성하고 초기화.
-/// </summary>
-void SActorPreviewViewport::CreatePreviewScene()
-{
-	PreviewScene = MakeShareable(new FAdvancedPreviewScene(FPreviewScene::ConstructionValues()));
 }
 
 /// <summary>
