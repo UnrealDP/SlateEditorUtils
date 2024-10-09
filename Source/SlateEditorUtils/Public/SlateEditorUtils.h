@@ -23,9 +23,16 @@ public:
     static TSharedRef<SWidget> CreateButtonWithText(const FText& ButtonText, FOnClicked OnClickedCallback);
 };
 
-#define SLATE_SPACE_SLOT(X, Y) \
+#define SLATE_VERTICAL_SLOT(X, Y) \
     + SVerticalBox::Slot() \
     .AutoHeight() \
+    [ \
+        SNew(SSpacer).Size(FVector2D(X, Y)) \
+    ]
+
+#define SLATE_HORIZONTAL_SLOT(X, Y) \
+    + SHorizontalBox::Slot() \
+    .AutoWidth() \
     [ \
         SNew(SSpacer).Size(FVector2D(X, Y)) \
     ]
