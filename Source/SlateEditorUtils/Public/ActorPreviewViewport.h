@@ -5,6 +5,14 @@
 #include "SEditorViewport.h"
 #include "SCommonEditorViewportToolbarBase.h"
 
+class FAdvancedPreviewScene;
+class SEditorViewport;
+class FEditorViewportClient;
+class FActorPreviewViewportClient;
+class UMeshComponent;
+class USkeletalMeshComponent;
+class UAnimInstance;
+
 /**
 * 액터용 프리뷰 뷰포트 위젯.
 * 스태틱 메쉬 및 스켈레탈 메쉬를 미리보기하며, 스켈레탈 메쉬의 경우 애니메이션을 재생할 수 있습니다.
@@ -26,12 +34,10 @@ public:
 
 	// Getter & Setter
 	/** Returns the preview scene */
-	TSharedRef<class FAdvancedPreviewScene> GetPreviewScene() { return PreviewScene.ToSharedRef(); }
+	TSharedRef<FAdvancedPreviewScene> GetPreviewScene() { return PreviewScene.ToSharedRef(); }
 	UWorld* GetPreviewWorld() const { return GetWorld(); }
 	AActor* GetActor() const { return Actor; }
 	// End of Getter & Setter
-
-	void SpawnActorInPreviewWorld(UClass* ActorClass);
 
 	template <typename T>
 	T* ReplaceComponentToActor()
@@ -61,13 +67,47 @@ public:
 		return NewComponent;
 	}
 
+	/**
+	 * FGCObject 인터페이스 구현. 가비지 컬렉터에서 관리할 객체를 참조 목록에 추가.
+	 * @param Collector 참조할 객체 수집기.
+	 */
+	virtual void AddReferencedObjects(FReferenceCollector& Collector) override;
 
 	/**
-	 * 프리뷰 어셋을 설정. 스태틱 메쉬 또는 스켈레탈 메쉬만 지원.
-	 * @param InAsset 설정할 스태틱 메쉬 또는 스켈레탈 메쉬.
-	 * @return 성공적으로 설정되었으면 true, 그렇지 않으면 false를 반환.
+	 * 액터를 프리뷰 월드에 생성하는 함수.
+	 * @param ActorClass 생성할 액터 클래스.
 	 */
-	bool SetPreviewAsset(UObject* InAsset);
+	void SpawnActorInPreviewWorld(UClass* ActorClass);
+
+	/**
+	 * 액터 교체
+	 * @param ActorClass 교체할 액터 클래스.
+	 */
+	void ReplaceActorPreviewWorld(UClass* ActorClass);
+
+	/**
+	 * 스켈레탈 메쉬 설정
+	 * @param SkeletalMesh 설정할 스켈레탈 메쉬.
+	 */
+	void SetSkeletalMesh(USkeletalMesh* SkeletalMesh);
+
+	/**
+	 * 스켈레탈 메쉬 교체
+	 * @param SkeletalMesh 교체할 스켈레탈 메쉬.
+	 */
+	void ReplaceSkeletalMesh(USkeletalMesh* SkeletalMesh);
+
+	/**
+	 * UAnimInstance 설정
+	 * @param NewAnimInterfaceClass 설정할 UAnimInstance 클래스.
+	 */	
+	void SetAnimInstance(UClass* AnimInstanceClass);
+
+	/**
+	 * UAnimInstance 교체
+	 * @param NewAnimInterfaceClass 교체할 UAnimInstance 클래스.
+	 */
+	void ReplaceAnimInstancePreviewWorld(UClass* AnimInstanceClass);
 
 	// 현재 설정된 프리뷰 어셋을 제거하는 함수.
 	void ClearPreviewAsset();
@@ -79,12 +119,6 @@ public:
 	 * !!!!!! 프리뷰는 월드 바꿔도 적용되지 않음 !!!!!!
 	 */
 	//bool SetPreviewWorld(class UWorld* InWorld);
-
-	/**
-	 * FGCObject 인터페이스 구현. 가비지 컬렉터에서 관리할 객체를 참조 목록에 추가.
-	 * @param Collector 참조할 객체 수집기.
-	 */
-	virtual void AddReferencedObjects(FReferenceCollector& Collector) override;
 
 	void InitCamera();
 
@@ -99,7 +133,7 @@ public:
 	void OnAddedToTab(const TSharedRef<SDockTab>& OwnerTab);
 
 	// ICommonEditorViewportToolbarInfoProvider interface
-	virtual TSharedRef<class SEditorViewport> GetViewportWidget() override;
+	virtual TSharedRef<SEditorViewport> GetViewportWidget() override;
 	virtual TSharedPtr<FExtender> GetExtenders() const override;
 	virtual void OnFloatingButtonClicked() override;
 	// End of ICommonEditorViewportToolbarInfoProvider interface
@@ -109,27 +143,24 @@ protected:
 	 * SEditorViewport 인터페이스. 뷰포트 클라이언트를 생성.
 	 * @return 생성된 뷰포트 클라이언트.
 	 */
-	virtual TSharedRef<class FEditorViewportClient> MakeEditorViewportClient() override;
+	virtual TSharedRef<FEditorViewportClient> MakeEditorViewportClient() override;
 
 private:
 
 	/** The parent tab where this viewport resides */
 	TWeakPtr<SDockTab> ParentTab;
 
-	/** Mesh component (static or skeletal) */
-	TWeakObjectPtr<class UMeshComponent> PreviewMeshComponent;
-
 	/** Reference to the preview scene */
-	TSharedPtr<class FAdvancedPreviewScene> PreviewScene;
+	TSharedPtr<FAdvancedPreviewScene> PreviewScene;
 
 	/** Viewport client */
-	TSharedPtr<class FActorPreviewViewportClient> ViewportClient;
+	TSharedPtr<FActorPreviewViewportClient> ViewportClient;
 
-	/** Skeletal mesh component */
-	TWeakObjectPtr<class USkeletalMeshComponent> SkeletalMeshComponent;
+	/** Mesh component (static or skeletal) */
+	TWeakObjectPtr<UMeshComponent> PreviewMeshComponent;
 
 	/** Animation instance */
-	TWeakObjectPtr<class UAnimInstance> AnimInstance;
+	UAnimInstance* AnimInstance;
 
 	TObjectPtr<AActor> Actor;
 };

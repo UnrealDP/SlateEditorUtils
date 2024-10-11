@@ -35,6 +35,11 @@ FActorPreviewViewportClient::FActorPreviewViewportClient(FAdvancedPreviewScene& 
 	 */
 	SetViewMode(VMI_Lit);
 
+	SetRealtime(true);
+	bShowWidget = false;
+	//SetWidgetMode(UE::Widget::WM_Translate);
+	//SetWidgetMode(UE::Widget::WM_Translate);
+
 	/**
 	 * 카메라 오브잇(Orbit) 기능은 카메라가 특정 지점을 중심으로 회전하는 기능을 의미
 	 * 즉, 카메라가 한 점을 바라보며 그 점을 중심으로 원형 궤도를 그리면서 회전하는 방식

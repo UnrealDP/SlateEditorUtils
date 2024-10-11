@@ -24,8 +24,25 @@ SActorPreviewViewport::~SActorPreviewViewport()
 	ClearPreviewAsset();
 }
 
+/// <summary>
+/// 가비지 컬렉터에서 참조할 객체들을 수집.
+/// </summary>
+/// <param name="Collector">참조할 객체 수집기.</param>
+void SActorPreviewViewport::AddReferencedObjects(FReferenceCollector& Collector)
+{
+	// 가비지 컬렉터가 미리보기 메쉬 컴포넌트를 수집하도록 추가
+	Collector.AddReferencedObject(PreviewMeshComponent);
+}
+
+/// <summary>
+/// 액터를 프리뷰 월드에 생성하는 함수.
+/// </summary>
+/// <param name="ActorClass">생성할 액터 클래스.</param>
 void SActorPreviewViewport::SpawnActorInPreviewWorld(UClass* ActorClass)
 {
+	checkf(ActorClass, TEXT("ActorClass is null!"));
+	checkf(!Actor, TEXT("Actor is already spawned! use ReplaceActorInPreviewWorld"));
+
 	if (ActorClass && GetWorld())
 	{
 		UWorld* PreviewWorld = GetWorld();
@@ -46,48 +63,102 @@ void SActorPreviewViewport::SpawnActorInPreviewWorld(UClass* ActorClass)
 }
 
 /// <summary>
-/// 가비지 컬렉터에서 참조할 객체들을 수집.
+/// 액터 교체
 /// </summary>
-/// <param name="Collector">참조할 객체 수집기.</param>
-void SActorPreviewViewport::AddReferencedObjects(FReferenceCollector& Collector)
+/// <param name="ActorClass">교체할 액터 클래스.</param>
+void SActorPreviewViewport::ReplaceActorPreviewWorld(UClass* ActorClass)
 {
-	// 가비지 컬렉터가 미리보기 메쉬 컴포넌트를 수집하도록 추가
-	Collector.AddReferencedObject(PreviewMeshComponent);
+	checkf(ActorClass, TEXT("ActorClass is null!"));
+	checkf(Actor, TEXT("Actor is null! use SpawnActorInPreviewWorld"));
+
+	if (PreviewMeshComponent.IsValid())
+	{
+		PreviewScene->RemoveComponent(PreviewMeshComponent.Get());
+		PreviewMeshComponent.Reset();
+		AnimInstance = nullptr;
+	}
+
+	Actor->Destroy();
+	Actor = nullptr;
+
+	SpawnActorInPreviewWorld(ActorClass);
 }
 
 /// <summary>
-/// 프리뷰 어셋을 설정. 스태틱 메쉬 또는 스켈레탈 메쉬만 지원.
+/// 스켈레탈 메쉬 설정
 /// </summary>
-/// <param name="InAsset">설정할 스태틱 메쉬 또는 스켈레탈 메쉬.</param>
-/// <returns>성공적으로 설정되었으면 true, 그렇지 않으면 false를 반환.</returns>
-bool SActorPreviewViewport::SetPreviewAsset(UObject* InAsset)
+/// <param name="SkeletalMesh">설정할 스켈레탈 메쉬.</param>
+void SActorPreviewViewport::SetSkeletalMesh(USkeletalMesh* SkeletalMesh)
 {
+	checkf(SkeletalMesh, TEXT("SkeletalMesh is null!"));
+
 	// 기존의 미리보기 메쉬를 제거
 	ClearPreviewAsset();
 
-	if (UStaticMesh* StaticMesh = Cast<UStaticMesh>(InAsset))
-	{
-		UStaticMeshComponent* NewStaticMeshComponent = ReplaceComponentToActor<UStaticMeshComponent>();
-		PreviewScene->AddComponent(NewStaticMeshComponent, FTransform::Identity);
-		NewStaticMeshComponent->SetStaticMesh(StaticMesh);
-		PreviewMeshComponent = NewStaticMeshComponent;
-		return true;
-	}
-	else if (USkeletalMesh* SkeletalMesh = Cast<USkeletalMesh>(InAsset))
-	{
-		USkeletalMeshComponent* NewSkeletalMeshComponent = ReplaceComponentToActor<USkeletalMeshComponent>();
-		PreviewScene->AddComponent(NewSkeletalMeshComponent, FTransform::Identity);
-		NewSkeletalMeshComponent->SetSkeletalMesh(SkeletalMesh);
-		PreviewMeshComponent = NewSkeletalMeshComponent;
-		SkeletalMeshComponent = NewSkeletalMeshComponent;
+	USkeletalMeshComponent* NewSkeletalMeshComponent = ReplaceComponentToActor<USkeletalMeshComponent>();
+	PreviewScene->AddComponent(NewSkeletalMeshComponent, FTransform::Identity);
+	NewSkeletalMeshComponent->SetSkeletalMesh(SkeletalMesh);
+	PreviewMeshComponent = NewSkeletalMeshComponent;
 
-		// 기본 애니메이션 재생
-		NewSkeletalMeshComponent->PlayAnimation(nullptr, true);
-		AnimInstance = NewSkeletalMeshComponent->GetAnimInstance();
-		return true;
+	// 기본 애니메이션 재생
+	NewSkeletalMeshComponent->PlayAnimation(nullptr, true);
+	AnimInstance = NewSkeletalMeshComponent->GetAnimInstance();
+}
+
+/// <summary>
+/// 스켈레탈 메쉬 교체
+/// </summary>
+///	<param name="SkeletalMesh">교체할 스켈레탈 메쉬.</param>
+void SActorPreviewViewport::ReplaceSkeletalMesh(USkeletalMesh* SkeletalMesh)
+{
+	checkf(SkeletalMesh, TEXT("SkeletalMesh is null!"));
+
+	if (PreviewMeshComponent.IsValid())
+	{
+		PreviewScene->RemoveComponent(PreviewMeshComponent.Get());
+		PreviewMeshComponent.Reset();
+		AnimInstance = nullptr;
+	}
+	else
+	{
+		Actor->Destroy();
+		Actor = nullptr;
+		SpawnActorInPreviewWorld(AActor::StaticClass());
 	}
 
-	return false;
+	SetSkeletalMesh(SkeletalMesh);
+}
+
+/// <summary>
+/// UAnimInstance 설정
+/// </summary>
+/// <param name="NewAnimInterfaceClass">설정할 UAnimInstance 클래스.</param>
+void SActorPreviewViewport::SetAnimInstance(UClass* AnimInstanceClass)
+{
+	checkf(AnimInstanceClass, TEXT("AnimInstanceClass is null!"));
+	checkf(Actor, TEXT("Actor is null !"));
+
+	if (USkeletalMeshComponent* SkeletalMeshComp = Actor->FindComponentByClass<USkeletalMeshComponent>())
+	{
+		// 기존 컴포넌트가 있으면 애니메이션 블루프린트 설정
+		SkeletalMeshComp->SetAnimInstanceClass(AnimInstanceClass);
+	}
+}
+
+/// <summary>
+/// UAnimInstance 교체
+/// </summary>
+/// <param name="NewAnimInterfaceClass">교체할 UAnimInstance 클래스.</param>
+void SActorPreviewViewport::ReplaceAnimInstancePreviewWorld(UClass* AnimInstanceClass)
+{
+	checkf(AnimInstanceClass, TEXT("AnimInstanceClass is null!"));
+	checkf(Actor, TEXT("Actor is null !"));
+
+	if (USkeletalMeshComponent* SkeletalMeshComp = Actor->FindComponentByClass<USkeletalMeshComponent>())
+	{
+		// 기존 컴포넌트가 있으면 애니메이션 블루프린트 설정
+		SkeletalMeshComp->SetAnimInstanceClass(AnimInstanceClass);
+	}
 }
 
 /// <summary>
@@ -125,8 +196,7 @@ void SActorPreviewViewport::ClearPreviewAsset()
 	{
 		PreviewScene->RemoveComponent(PreviewMeshComponent.Get());
 		PreviewMeshComponent.Reset();
-		SkeletalMeshComponent.Reset();
-		AnimInstance.Reset();
+		AnimInstance = nullptr;
 	}
 }
 
@@ -136,7 +206,7 @@ void SActorPreviewViewport::ClearPreviewAsset()
 /// <param name="DeltaTime">틱당 경과 시간.</param>
 void SActorPreviewViewport::UpdateAnimation(float DeltaTime)
 {
-	if (SkeletalMeshComponent.IsValid() && AnimInstance.IsValid())
+	if (AnimInstance)
 	{
 		AnimInstance->UpdateAnimation(DeltaTime, false);
 	}
