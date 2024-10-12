@@ -77,13 +77,13 @@ public:
 	 * 액터를 프리뷰 월드에 생성하는 함수.
 	 * @param ActorClass 생성할 액터 클래스.
 	 */
-	void SpawnActorInPreviewWorld(UClass* ActorClass);
+	TObjectPtr<AActor> SpawnActorInPreviewWorld(UClass* ActorClass);
 
 	/**
 	 * 액터 교체
 	 * @param ActorClass 교체할 액터 클래스.
 	 */
-	void ReplaceActorPreviewWorld(UClass* ActorClass);
+	TObjectPtr<AActor> ReplaceActorPreviewWorld(UClass* ActorClass);
 
 	/**
 	 * 스켈레탈 메쉬 설정

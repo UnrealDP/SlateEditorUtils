@@ -38,7 +38,7 @@ void SActorPreviewViewport::AddReferencedObjects(FReferenceCollector& Collector)
 /// 액터를 프리뷰 월드에 생성하는 함수.
 /// </summary>
 /// <param name="ActorClass">생성할 액터 클래스.</param>
-void SActorPreviewViewport::SpawnActorInPreviewWorld(UClass* ActorClass)
+TObjectPtr<AActor> SActorPreviewViewport::SpawnActorInPreviewWorld(UClass* ActorClass)
 {
 	checkf(ActorClass, TEXT("ActorClass is null!"));
 	checkf(!Actor, TEXT("Actor is already spawned! use ReplaceActorInPreviewWorld"));
@@ -60,13 +60,15 @@ void SActorPreviewViewport::SpawnActorInPreviewWorld(UClass* ActorClass)
 			}
 		}
 	}
+
+	return Actor;
 }
 
 /// <summary>
 /// 액터 교체
 /// </summary>
 /// <param name="ActorClass">교체할 액터 클래스.</param>
-void SActorPreviewViewport::ReplaceActorPreviewWorld(UClass* ActorClass)
+TObjectPtr<AActor> SActorPreviewViewport::ReplaceActorPreviewWorld(UClass* ActorClass)
 {
 	checkf(ActorClass, TEXT("ActorClass is null!"));
 	checkf(Actor, TEXT("Actor is null! use SpawnActorInPreviewWorld"));
@@ -82,6 +84,7 @@ void SActorPreviewViewport::ReplaceActorPreviewWorld(UClass* ActorClass)
 	Actor = nullptr;
 
 	SpawnActorInPreviewWorld(ActorClass);
+	return Actor;
 }
 
 /// <summary>
