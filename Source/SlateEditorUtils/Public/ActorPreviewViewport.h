@@ -148,19 +148,20 @@ protected:
 private:
 
 	/** The parent tab where this viewport resides */
-	TWeakPtr<SDockTab> ParentTab;
+	TWeakPtr<SDockTab> ParentTab = nullptr;
 
 	/** Reference to the preview scene */
-	TSharedPtr<FAdvancedPreviewScene> PreviewScene;
+	TSharedPtr<FAdvancedPreviewScene> PreviewScene = nullptr;
 
 	/** Viewport client */
-	TSharedPtr<FActorPreviewViewportClient> ViewportClient;
+	TSharedPtr<FActorPreviewViewportClient> ViewportClient = nullptr;
 
 	/** Mesh component (static or skeletal) */
-	TWeakObjectPtr<UMeshComponent> PreviewMeshComponent;
+	TWeakObjectPtr<UMeshComponent> PreviewMeshComponent = nullptr;
 
 	/** Animation instance */
-	UAnimInstance* AnimInstance;
+	UAnimInstance* AnimInstance = nullptr;
 
-	TObjectPtr<AActor> Actor;
+	UPROPERTY()
+	TObjectPtr<AActor> Actor = nullptr;
 };
